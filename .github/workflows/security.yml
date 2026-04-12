@@ -9,23 +9,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # -------------------------
+      # CHECKOUT CODE
+      # -------------------------
       - name: Checkout Code
         uses: actions/checkout@v3
 
       # -------------------------
-      # SECRET SCANNING
+      # SECRET SCANNING (GITLEAKS)
       # -------------------------
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
 
       # -------------------------
-      # BUILD IMAGE
+      # BUILD DOCKER IMAGE
       # -------------------------
       - name: Build Docker Image
         run: docker build -t myapp .
 
       # -------------------------
-      # CONTAINER SCAN (KILL SWITCH)
+      # CONTAINER SCAN (TRIVY)
+      # KILL SWITCH ENABLED
       # -------------------------
       - name: Run Trivy Scan
         run: |
@@ -37,9 +41,13 @@ jobs:
             myapp
 
       # -------------------------
-      # SAST (SonarQube)
+      # SAST (SONARQUBE / SONARCLOUD)
       # -------------------------
-      - name: Sonar Scan
+      - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
+        with:
+          args: >
+            -Dsonar.projectKey=Earnest07_ci-cd-security-pipeline
+            -Dsonar.organization=Earnest07
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
