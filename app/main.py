@@ -3,7 +3,7 @@ import os
 
 app = FastAPI()
 
-AWS_SECRET_KEY = "AKIAIMSI58772EXAMPLE"
+AWS_SECRET_KEY = "AKIA1234567890ABCD12"
 
 @app.get("/")
 def read_root():
