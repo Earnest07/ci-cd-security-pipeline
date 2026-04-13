@@ -36,7 +36,7 @@ jobs:
         with:
           image-ref: myapp
           severity: HIGH,CRITICAL
-          exit-code: 0 # bypass for now to test Sonar kill switch
+          exit-code: 0
 
       # -------------------------
       # SONARCLOUD SCAN
