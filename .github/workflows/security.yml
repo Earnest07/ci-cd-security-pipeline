@@ -16,11 +16,35 @@ jobs:
         uses: actions/checkout@v3
 
       # -------------------------
+      # SETUP PYTHON (for tests)
+      # -------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # -------------------------
+      # INSTALL DEPENDENCIES
+      # -------------------------
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      # -------------------------
+      # RUN TESTS + COVERAGE
+      # -------------------------
+      - name: Run Tests with Coverage
+        run: |
+          pytest --cov=app --cov-report=xml
+
+      # -------------------------
       # SECRET SCANNING (GITLEAKS)
       # -------------------------
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
-        continue-on-error: true # allow pipeline to proceed for testing
+        continue-on-error: true
 
       # -------------------------
       # BUILD DOCKER IMAGE
@@ -49,63 +73,47 @@ jobs:
             -Dsonar.organization=earnest07
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.branch.name=${{ github.ref_name }}
+            -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # -------------------------
-      # DEBUG (VERY IMPORTANT)
+      # DEBUG
       # -------------------------
       - name: Debug scanner output
         run: |
-          echo "Checking scannerwork..."
           ls -la .scannerwork || echo "No scannerwork found"
           cat .scannerwork/report-task.txt || echo "No report-task.txt"
 
       # -------------------------
-      # WAIT FOR SONAR PROCESSING (CRITICAL FIX)
-      # -------------------------
-      - name: Wait for SonarCloud processing
-        run: sleep 30
-
-      # -------------------------
-      # ROBUST QUALITY GATE CHECK (KILL SWITCH)
+      # QUALITY GATE CHECK
       # -------------------------
       - name: Enforce Sonar Quality Gate
         run: |
-          echo "Extracting CE Task ID..."
           CE_TASK_ID=$(grep ceTaskId .scannerwork/report-task.txt | cut -d= -f2)
-
           echo "CE Task ID: $CE_TASK_ID"
 
           STATUS="PENDING"
-
-          echo "Waiting for SonarCloud analysis to complete..."
 
           while [[ "$STATUS" == "PENDING" || "$STATUS" == "IN_PROGRESS" ]]; do
             RESPONSE=$(curl -s -u $SONAR_TOKEN: \
               "https://sonarcloud.io/api/ce/task?id=$CE_TASK_ID")
 
             STATUS=$(echo $RESPONSE | jq -r '.task.status')
-            echo "Current Status: $STATUS"
-
+            echo "Status: $STATUS"
             sleep 5
           done
 
           ANALYSIS_ID=$(echo $RESPONSE | jq -r '.task.analysisId')
 
-          echo "Analysis ID: $ANALYSIS_ID"
-
           QG_STATUS=$(curl -s -u $SONAR_TOKEN: \
             "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$ANALYSIS_ID" \
             | jq -r '.projectStatus.status')
 
-          echo "Quality Gate Status: $QG_STATUS"
+          echo "Quality Gate: $QG_STATUS"
 
           if [ "$QG_STATUS" != "OK" ]; then
-            echo "❌ Quality Gate FAILED - Breaking Pipeline"
             exit 1
-          else
-            echo "✅ Quality Gate PASSED"
           fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
