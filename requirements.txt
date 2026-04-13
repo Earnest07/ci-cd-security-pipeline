@@ -5,3 +5,5 @@ python-multipart>=0.0.6
 pytest
 pytest-cov
 httpx
+python-multipart>=0.0.22
+wheel>=0.46.2
