@@ -5,8 +5,6 @@ import operator as op
 
 app = FastAPI()
 
-AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY", "")
-
 operators = {
     ast.Add: op.add,
     ast.Sub: op.sub,
