@@ -1,10 +1,11 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get upgrade -y && apt-get clean
-
 WORKDIR /code
 
 COPY requirements.txt .
+
+RUN apt-get update && apt-get upgrade -y && apt-get clean && \
+    pip install --upgrade pip setuptools wheel
 
 RUN pip install --no-cache-dir -r requirements.txt
 
