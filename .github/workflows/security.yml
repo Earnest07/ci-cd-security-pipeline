@@ -37,6 +37,7 @@ jobs:
       # -------------------------
       - name: Run Tests with Coverage
         run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
           pytest --cov=app --cov-report=xml
 
       # -------------------------
@@ -44,7 +45,6 @@ jobs:
       # -------------------------
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
-        continue-on-error: true
 
       # -------------------------
       # BUILD DOCKER IMAGE
@@ -60,7 +60,7 @@ jobs:
         with:
           image-ref: myapp
           severity: HIGH,CRITICAL
-          exit-code: 0
+          exit-code: 1
 
       # -------------------------
       # SONARCLOUD SCAN
