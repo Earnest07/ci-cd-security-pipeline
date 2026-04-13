@@ -11,3 +11,12 @@ def test_users():
     response = client.get("/users")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+def test_calculate():
+    response = client.get("/calculate", params={"expression": "2+2"})
+    assert response.status_code == 200
+    assert response.json()["result"] == 4
+
+def test_login():
+    response = client.post("/login")
+    assert response.status_code == 200
