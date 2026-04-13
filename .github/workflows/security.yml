@@ -51,8 +51,16 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Debug scanner output
+        run: |
+          echo "Checking scannerwork..."
+          ls -la .scannerwork || echo "No scannerwork found"
+          cat .scannerwork/report-task.txt || echo "No report-task.txt"
+
       - name: Sonar Quality Gate Check
         uses: sonarsource/sonarqube-quality-gate-action@v1
         timeout-minutes: 5
+        with:
+          scanMetadataReportFile: .scannerwork/report-task.txt
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
