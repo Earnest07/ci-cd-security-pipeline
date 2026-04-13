@@ -75,6 +75,8 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.branch.name=${{ github.ref_name }}
             -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.sources=app
+            -Dsonar.tests=tests
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
